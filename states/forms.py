@@ -8,3 +8,8 @@ class ProfileSetup(StatesGroup):
     waiting_weight = State()
     waiting_activity_level = State()
     waiting_goal = State()
+
+
+class WaterInput(StatesGroup):
+    waiting_amount = State()
+    waiting_goal = State()

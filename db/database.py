@@ -235,7 +235,7 @@ class Database:
 
     async def _run_migrations(self):
         migrations = [
-            # (table, column, type) — добавляем при обновлениях схемы
+            ("users", "water_goal_ml", "INTEGER"),
         ]
         for table, column, col_type in migrations:
             try:
@@ -297,6 +297,32 @@ class Database:
             (user_id, today),
         )
         return row[0] if row else 0
+
+    async def get_water_week(self, user_id: int, dates: list[str]) -> dict[str, int]:
+        """Возвращает {date: total_ml} за переданные даты."""
+        result = {d: 0 for d in dates}
+        rows = await self.fetchall(
+            "SELECT DATE(logged_at), COALESCE(SUM(amount_ml), 0) FROM water_log "
+            "WHERE user_id = ? AND DATE(logged_at) >= ? AND DATE(logged_at) <= ? "
+            "GROUP BY DATE(logged_at)",
+            (user_id, dates[0], dates[-1]),
+        )
+        for date_str, total in rows:
+            if date_str in result:
+                result[date_str] = total
+        return result
+
+    async def set_water_goal(self, user_id: int, goal_ml: int):
+        await self.execute(
+            "UPDATE users SET water_goal_ml = ? WHERE user_id = ?",
+            (goal_ml, user_id),
+        )
+
+    async def get_water_goal(self, user_id: int) -> int | None:
+        row = await self.fetchone(
+            "SELECT water_goal_ml FROM users WHERE user_id = ?", (user_id,)
+        )
+        return row[0] if row else None
 
     # --- Mood ---
 
