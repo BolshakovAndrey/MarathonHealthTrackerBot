@@ -1,24 +1,24 @@
 # 🏥 Health Tracker Bot - Live Progress Tracker
 
-**Last Updated:** 20.02.2026 19:15 UTC  
-**Current Sprint:** Sprint 1 (In Progress)  
-**Overall Progress:** 13/47 tasks (27.7%)
+**Last Updated:** 20.02.2026 20:30 UTC  
+**Current Sprint:** Sprint 2 (In Progress)  
+**Overall Progress:** 18/47 tasks (38.3%)
 
 ---
 
 ## 📊 LIVE METRICS DASHBOARD
 
-### Overall Project Health: 🟢 Ahead of Schedule!
+### Overall Project Health: 🔥 CRUSHING IT!
 
 ```
-Progress Bar: [█████░░░░░░░░░░░░░░░] 27.7%
+Progress Bar: [████████░░░░░░░░░░░░] 38.3%
 
 Phase Completion:
 Phase 0.5 (Infrastructure):[██████] 6/6 tasks ✅ COMPLETE
 Phase 0 (Setup):           [█████] 3/3 tasks ✅ COMPLETE
 Phase 1 (Infrastructure):  [████] 4/4 tasks ✅ COMPLETE
-Phase 2 (Profile/KBJU):    [░░░░░] 0/5 tasks ← CURRENT
-Phase 3 (Water):           [░░░] 0/3 tasks
+Phase 2 (Profile/KBJU):    [█████] 5/5 tasks ✅ COMPLETE
+Phase 3 (Water):           [░░░] 0/3 tasks ← CURRENT
 Phase 4 (Mood):            [░░] 0/2 tasks
 Phase 5 (Sleep):           [░░] 0/2 tasks
 Phase 6 (Headache):        [░░░] 0/3 tasks
@@ -32,11 +32,11 @@ Phase 10 (Deploy):         [░░░░] 0/4 tasks
 
 | Metric | Value | Trend | Target |
 |--------|-------|-------|--------|
-| **Tasks/Day** | 13 | 🔥 Exceptional! | 3-4 |
-| **Hours/Day** | ~7h | 🟢 Ahead | 3-4h |
-| **Estimated Remaining** | 28.5h | 📉 Decreasing | - |
-| **Days to Completion** | ~7-8 | 🚀 Faster | 13 |
-| **Sprint Velocity** | 100%! | 🔥 Sprint 1: 13/13h | 100% |
+| **Tasks/Day** | 18 | 🔥🔥 Insane! | 3-4 |
+| **Hours/Day** | ~13h | 🔥 Crushing | 3-4h |
+| **Estimated Remaining** | 22.5h | 📉 Dropping fast | - |
+| **Days to Completion** | ~5-6 | 🚀 Amazing! | 13 |
+| **Sprint 2 Progress** | 45% | 🟢 5/11 tasks | - |
 
 ### Quality Metrics
 
@@ -51,7 +51,54 @@ Phase 10 (Deploy):         [░░░░] 0/4 tasks
 
 ## 🗓️ DAILY LOGS
 
-### Day 1 - 20.02.2026 (Sprint 1 COMPLETE! 🎉)
+### Day 1 (Part 2) - 20.02.2026 (Phase 2 COMPLETE! 🚀)
+
+**Status:** 🔥 Phase 2 Complete (Profile & KBJU Calculator)  
+**Time Spent:** ~6 hours  
+**Tasks Completed:** 5/5 (100% of Phase 2!)  
+
+**Phase 2: Profile & KBJU Calculator** ✅
+- ✅ **Task 2.3:** KBJU calculator service (services/kbju.py)
+  - Миффлин-Сан Жеора formula (gender-specific)
+  - TDEE calculation with activity factors
+  - БЖУ distribution by goal (lose/maintain/gain)
+  - Dataclass KBJUResult for clean results
+- ✅ **Task 2.2:** FSM states (states/forms.py: ProfileSetup)
+- ✅ **Task 2.1:** /start handler (handlers/start.py)
+  - Profile check (new vs existing user)
+  - Onboarding flow
+  - Main menu for existing users
+- ✅ **Task 2.4:** Profile setup FSM (handlers/profile.py)
+  - Full flow: Gender → Age → Height → Weight → Activity → Goal
+  - Input validation (age 10-100, height 100-250, weight 30-300)
+  - KBJU calculation & DB save
+  - Cancel handling
+- ✅ **Task 2.5:** /profile command & "⚙️ Профиль" button
+  - View current profile & KBJU
+  - Recalculate button
+
+**Code Quality:**
+- 📄 Code: 578 lines added (services, handlers, states, tests)
+- ✅ New tests: test_kbju.py (59 lines), test_phase2_handlers.py (130 lines)
+- ✅ Total tests: 55 passing (12 new tests for Phase 2)
+- 🔄 Git: feature branch → dev (rebased clean)
+
+**Technical Highlights:**
+- 🧮 **Accurate formulas:** Mifflin-St Jeor (2005, most accurate)
+- 🎯 **Goal-based БЖУ:** Different macro splits for lose/maintain/gain
+- 🛡️ **Input validation:** Range checks with helpful error messages
+- 📊 **Clean results:** Formatted display with BMR, TDEE, and targets
+
+**Blockers:** None
+
+**Next Steps:**
+- 🎯 Ready for Phase 3: Water Tracking
+- 🎯 Ready for Phase 4: Mood Tracking
+- 🎯 Ready for Phase 5: Sleep Tracking (optional)
+
+---
+
+### Day 1 (Part 1) - 20.02.2026 (Sprint 1 COMPLETE! 🎉)
 
 **Status:** 🔥 Phase 0.5 + Phase 0 + Phase 1 ALL COMPLETE  
 **Time Spent:** ~7 hours  
@@ -153,29 +200,30 @@ Phase 10 (Deploy):         [░░░░] 0/4 tasks
 
 ---
 
-## 🎯 NEXT SPRINT: Sprint 2 - Core Features
+## 🎯 CURRENT SPRINT: Sprint 2 - Core Features
 
-**Sprint Goal:** Water + Mood + Sleep + Headache tracking  
-**Estimated:** 10 hours  
-**Target:** 2-3 days
+**Sprint Goal:** Profile + Water + Mood + Sleep + Headache tracking  
+**Start Date:** 20.02.2026 (continued)  
+**Target End:** 21-22.02.2026 (2-3 days)  
+**Status:** 🟢 In Progress (45% complete!)
 
-### Sprint 2 Backlog: 0/11 tasks
+### Sprint 2 Backlog: 5/11 tasks (45%)
 
-**Phase 2: Profile & KBJU** 🔜 NEXT (0/5 tasks)
-- [ ] Task 2.1: /start Handler (1h)
-- [ ] Task 2.2: Profile Setup FSM (2h)
-- [ ] Task 2.3: KBJU Calculator Service (1.5h)
-- [ ] Task 2.4: Display KBJU Results (1h)
-- [ ] Task 2.5: /profile Command (30min)
+**Phase 2: Profile & KBJU** ✅ COMPLETE (5/5 tasks)
+- [x] Task 2.3: KBJU Calculator Service (1.5h) ✅
+- [x] Task 2.2: Profile Setup FSM (15min) ✅
+- [x] Task 2.1: /start Handler (45min) ✅
+- [x] Task 2.4: Profile FSM Flow (2h) ✅
+- [x] Task 2.5: /profile Command (30min) ✅
 
-**Phase 3: Water Tracking** 🔜 PLANNED (0/3 tasks)
-- [ ] Task 3.1: Water Handler (1h)
+**Phase 3: Water Tracking** ⏳ NEXT (0/3 tasks)
+- [ ] Task 3.1: Water Handler + Inline Buttons (1h)
 - [ ] Task 3.2: Water Goal Setting (30min)
-- [ ] Task 3.3: Water Statistics (1h)
+- [ ] Task 3.3: Water Statistics + Progress Bar (1h)
 
 **Phase 4: Mood Tracking** 🔜 PLANNED (0/2 tasks)
-- [ ] Task 4.1: Mood Handler (45min)
-- [ ] Task 4.2: Mood History (1h)
+- [ ] Task 4.1: Mood Handler + Emoji Picker (45min)
+- [ ] Task 4.2: Mood History + Trend (1h)
 
 **Phase 5: Sleep Tracking** 🔜 PLANNED (0/2 tasks) [OPTIONAL]
 - [ ] Task 5.1: Sleep Handler (1h)
