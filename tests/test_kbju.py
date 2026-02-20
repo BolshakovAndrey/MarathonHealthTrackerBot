@@ -57,3 +57,18 @@ def test_calculate_kbju_goal_factor_lose():
 def test_invalid_inputs_raise(func, args):
     with pytest.raises(ValueError):
         func(*args)
+
+
+def test_bmr_negative_weight():
+    with pytest.raises(ValueError, match="must be positive"):
+        calculate_bmr("male", 30, 175.0, -5.0)
+
+
+def test_tdee_zero_bmr():
+    with pytest.raises(ValueError, match="bmr must be positive"):
+        calculate_tdee(0.0, "moderate")
+
+
+def test_bju_zero_calories():
+    with pytest.raises(ValueError, match="calories must be positive"):
+        calculate_bju(0, "maintain")

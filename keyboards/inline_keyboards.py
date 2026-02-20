@@ -27,15 +27,3 @@ def cancel_keyboard():
     builder.row(InlineKeyboardButton(text="Отмена", callback_data="cancel"))
     return builder.as_markup()
 
-
-# Backward-compatible aliases from project plan naming.
-def main_menu() -> ReplyKeyboardMarkup:
-    return main_menu_keyboard()
-
-
-def yes_no(prefix: str):
-    return yes_no_keyboard(prefix)
-
-
-def cancel():
-    return cancel_keyboard()
