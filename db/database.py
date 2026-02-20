@@ -307,15 +307,20 @@ class Database:
             "GROUP BY DATE(logged_at)",
             (user_id, dates[0], dates[-1]),
         )
-        for date_str, total in rows:
+        for raw_date, total in rows:
+            # PG возвращает date-объект, SQLite — строку
+            date_str = raw_date.isoformat() if hasattr(raw_date, "isoformat") else str(raw_date)
             if date_str in result:
                 result[date_str] = total
         return result
 
     async def set_water_goal(self, user_id: int, goal_ml: int):
+        # upsert гарантирует наличие строки перед UPDATE
         await self.execute(
-            "UPDATE users SET water_goal_ml = ? WHERE user_id = ?",
-            (goal_ml, user_id),
+            """INSERT INTO users (user_id, water_goal_ml)
+               VALUES (?, ?)
+               ON CONFLICT(user_id) DO UPDATE SET water_goal_ml = excluded.water_goal_ml""",
+            (user_id, goal_ml),
         )
 
     async def get_water_goal(self, user_id: int) -> int | None:

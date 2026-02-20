@@ -1,6 +1,6 @@
 import pytest
 from datetime import date, timedelta
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from services.water import (
     calc_default_goal,
@@ -25,15 +25,15 @@ def test_goal_from_weight_male():
 
 
 def test_goal_female_default_no_weight():
-    assert calc_default_goal("female", None) == 2000
+    assert calc_default_goal("female", None) == 2500
 
 
 def test_goal_male_default_no_weight():
-    assert calc_default_goal("male", None) == 2500
+    assert calc_default_goal("male", None) == 3500
 
 
 def test_goal_none_gender_no_weight():
-    assert calc_default_goal(None, None) == 2500
+    assert calc_default_goal(None, None) == 3500
 
 
 def test_goal_clamped_min():
@@ -175,6 +175,14 @@ async def test_get_water_week_with_data(db):
     dates = week_dates()
     week = await db.get_water_week(1, dates)
     assert week[today] == 1000
+
+
+async def test_get_water_week_handles_pg_date_rows(db):
+    today_obj = date.today()
+    dates = week_dates(today_obj)
+    with patch.object(db, "fetchall", new=AsyncMock(return_value=[(today_obj, 1200)])):
+        week = await db.get_water_week(1, dates)
+    assert week[today_obj.isoformat()] == 1200
 
 
 async def test_set_and_get_water_goal(db):
