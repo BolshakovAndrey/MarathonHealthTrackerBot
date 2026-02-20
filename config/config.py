@@ -1,9 +1,10 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from typing import Optional
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     BOT_TOKEN: str
     APP_ENV: str = "development"
     TIMEZONE: str = "Europe/Belgrade"
@@ -31,10 +32,6 @@ class Settings(BaseSettings):
     @property
     def use_postgres(self) -> bool:
         return self.DATABASE_URL is not None
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
 
 settings = Settings()
