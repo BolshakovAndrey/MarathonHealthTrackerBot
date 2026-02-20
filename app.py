@@ -40,6 +40,7 @@ if settings.SENTRY_DSN and settings.is_production:
         dsn=settings.SENTRY_DSN,
         traces_sample_rate=0.2,
         environment=settings.APP_ENV,
+        send_default_pii=True,
         before_send=_sentry_before_send,
     )
     logger.info("Sentry инициализирован")
