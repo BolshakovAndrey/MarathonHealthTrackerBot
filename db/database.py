@@ -84,11 +84,44 @@ class Database:
                 cursor = await conn.execute(sql, params)
                 return await cursor.fetchone()
 
+    @property
+    def _serial(self) -> str:
+        """Тип автоинкремента: SERIAL для PG, INTEGER AUTOINCREMENT для SQLite."""
+        return "SERIAL" if self._use_pg else "INTEGER"
+
+    def _pk(self, name: str = "id") -> str:
+        if self._use_pg:
+            return f"{name} SERIAL PRIMARY KEY"
+        return f"{name} INTEGER PRIMARY KEY AUTOINCREMENT"
+
     # --- DDL ---
+    # Решение по daily_targets: поля КБЖУ-целей (bmr/tdee/calories/protein/fat/carbs)
+    # хранятся в таблице users — у одного пользователя ровно один набор целей,
+    # отдельная таблица избыточна на данном этапе.
 
     async def _create_tables(self):
-        # users — профиль пользователя и цели КБЖУ
+        # users — профиль пользователя + цели КБЖУ (bmr/tdee/calories/protein/fat/carbs)
         await self.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id        BIGINT PRIMARY KEY,
+                username       TEXT,
+                full_name      TEXT,
+                gender         TEXT,
+                age            INTEGER,
+                height         REAL,
+                weight         REAL,
+                activity_level TEXT,
+                goal           TEXT,
+                bmr            REAL,
+                tdee           REAL,
+                calories       INTEGER,
+                protein        INTEGER,
+                fat            INTEGER,
+                carbs          INTEGER,
+                created_at     TIMESTAMPTZ DEFAULT NOW(),
+                updated_at     TIMESTAMPTZ DEFAULT NOW()
+            )
+        """ if self._use_pg else """
             CREATE TABLE IF NOT EXISTS users (
                 user_id        INTEGER PRIMARY KEY,
                 username       TEXT,
@@ -113,16 +146,33 @@ class Database:
         # water_log — трекинг воды
         await self.execute("""
             CREATE TABLE IF NOT EXISTS water_log (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id    INTEGER NOT NULL,
-                amount_ml  INTEGER NOT NULL,
-                logged_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+                id        SERIAL PRIMARY KEY,
+                user_id   BIGINT NOT NULL,
+                amount_ml INTEGER NOT NULL,
+                logged_at TIMESTAMPTZ DEFAULT NOW(),
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        """ if self._use_pg else """
+            CREATE TABLE IF NOT EXISTS water_log (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id   INTEGER NOT NULL,
+                amount_ml INTEGER NOT NULL,
+                logged_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             )
         """)
 
         # mood_log — настроение
         await self.execute("""
+            CREATE TABLE IF NOT EXISTS mood_log (
+                id        SERIAL PRIMARY KEY,
+                user_id   BIGINT NOT NULL,
+                emoji     TEXT NOT NULL,
+                note      TEXT,
+                logged_at TIMESTAMPTZ DEFAULT NOW(),
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        """ if self._use_pg else """
             CREATE TABLE IF NOT EXISTS mood_log (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id   INTEGER NOT NULL,
@@ -135,6 +185,16 @@ class Database:
 
         # sleep_log — сон
         await self.execute("""
+            CREATE TABLE IF NOT EXISTS sleep_log (
+                id         SERIAL PRIMARY KEY,
+                user_id    BIGINT NOT NULL,
+                sleep_date DATE NOT NULL,
+                hours      REAL NOT NULL,
+                quality    INTEGER,
+                logged_at  TIMESTAMPTZ DEFAULT NOW(),
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        """ if self._use_pg else """
             CREATE TABLE IF NOT EXISTS sleep_log (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id    INTEGER NOT NULL,
@@ -149,13 +209,24 @@ class Database:
         # headache_log — мигрени / головные боли
         await self.execute("""
             CREATE TABLE IF NOT EXISTS headache_log (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id    INTEGER NOT NULL,
-                intensity  INTEGER NOT NULL,
-                location   TEXT,
-                triggers   TEXT,
-                duration   INTEGER,
-                logged_at  TEXT DEFAULT CURRENT_TIMESTAMP,
+                id        SERIAL PRIMARY KEY,
+                user_id   BIGINT NOT NULL,
+                intensity INTEGER NOT NULL,
+                location  TEXT,
+                triggers  TEXT,
+                duration  INTEGER,
+                logged_at TIMESTAMPTZ DEFAULT NOW(),
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        """ if self._use_pg else """
+            CREATE TABLE IF NOT EXISTS headache_log (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id   INTEGER NOT NULL,
+                intensity INTEGER NOT NULL,
+                location  TEXT,
+                triggers  TEXT,
+                duration  INTEGER,
+                logged_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             )
         """)
