@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # PostgreSQL (Railway production/staging)
     DATABASE_URL: Optional[str] = None
 
+    # Sentry (только production)
+    SENTRY_DSN: Optional[str] = None
+
     ENABLE_DEBUG: bool = False
 
     @field_validator("APP_ENV")
