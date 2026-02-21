@@ -5,6 +5,7 @@ from .profile import router as profile_router
 from .water import router as water_router
 from .mood import router as mood_router
 from .sleep import router as sleep_router
+from .headache import router as headache_router
 
 all_routers: list[Router] = [
     start_router,
@@ -12,4 +13,5 @@ all_routers: list[Router] = [
     water_router,
     mood_router,
     sleep_router,
+    headache_router,
 ]

@@ -372,7 +372,7 @@ class Database:
 
     async def get_headache_history(self, user_id: int, limit: int = 10):
         return await self.fetchall(
-            "SELECT intensity, location, triggers, duration, logged_at FROM headache_log WHERE user_id = ? ORDER BY logged_at DESC LIMIT ?",
+            "SELECT intensity, location, triggers, duration, logged_at FROM headache_log WHERE user_id = ? ORDER BY logged_at DESC, id DESC LIMIT ?",
             (user_id, limit),
         )
 
