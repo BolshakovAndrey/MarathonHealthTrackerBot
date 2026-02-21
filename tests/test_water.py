@@ -1,6 +1,6 @@
 import pytest
 from datetime import date, timedelta
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from services.water import (
     calc_default_goal,
@@ -25,15 +25,15 @@ def test_goal_from_weight_male():
 
 
 def test_goal_female_default_no_weight():
-    assert calc_default_goal("female", None) == 2000
+    assert calc_default_goal("female", None) == 2500
 
 
 def test_goal_male_default_no_weight():
-    assert calc_default_goal("male", None) == 2500
+    assert calc_default_goal("male", None) == 3500
 
 
 def test_goal_none_gender_no_weight():
-    assert calc_default_goal(None, None) == 2500
+    assert calc_default_goal(None, None) == 3500
 
 
 def test_goal_clamped_min():
@@ -177,6 +177,14 @@ async def test_get_water_week_with_data(db):
     assert week[today] == 1000
 
 
+async def test_get_water_week_handles_pg_date_rows(db):
+    today_obj = date.today()
+    dates = week_dates(today_obj)
+    with patch.object(db, "fetchall", new=AsyncMock(return_value=[(today_obj, 1200)])):
+        week = await db.get_water_week(1, dates)
+    assert week[today_obj.isoformat()] == 1200
+
+
 async def test_set_and_get_water_goal(db):
     await db.set_water_goal(1, 2500)
     goal = await db.get_water_goal(1)
@@ -186,3 +194,138 @@ async def test_set_and_get_water_goal(db):
 async def test_get_water_goal_none_by_default(db):
     goal = await db.get_water_goal(1)
     assert goal is None
+
+
+# --- Handler logic tests ---
+
+def _make_message(text: str, user_id: int = 1) -> AsyncMock:
+    msg = AsyncMock()
+    msg.from_user.id = user_id
+    msg.from_user.username = "testuser"
+    msg.from_user.full_name = "Test User"
+    msg.text = text
+    return msg
+
+
+def _make_callback(data: str, user_id: int = 1) -> AsyncMock:
+    cb = AsyncMock()
+    cb.from_user.id = user_id
+    cb.from_user.username = "testuser"
+    cb.from_user.full_name = "Test User"
+    cb.data = data
+    cb.message = AsyncMock()
+    return cb
+
+
+@pytest.fixture
+def fsm_state() -> AsyncMock:
+    return AsyncMock()
+
+
+async def test_msg_water_amount_invalid_text(db):
+    """Нечисловой ввод — сообщение об ошибке, логирование не происходит."""
+    from handlers.water import msg_water_amount
+    msg = _make_message("abc")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_amount(msg, state)
+    msg.answer.assert_awaited_once()
+    assert "целое число" in msg.answer.call_args[0][0]
+    state.clear.assert_not_called()
+
+
+async def test_msg_water_amount_too_small(db):
+    """Значение < 10 мл — ошибка диапазона."""
+    from handlers.water import msg_water_amount
+    msg = _make_message("5")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_amount(msg, state)
+    msg.answer.assert_awaited_once()
+    assert "5000" in msg.answer.call_args[0][0]
+    state.clear.assert_not_called()
+
+
+async def test_msg_water_amount_too_large(db):
+    """Значение > 5000 мл — ошибка диапазона."""
+    from handlers.water import msg_water_amount
+    msg = _make_message("9999")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_amount(msg, state)
+    assert "5000" in msg.answer.call_args[0][0]
+
+
+async def test_msg_water_amount_valid(db):
+    """Корректный ввод: FSM очищен, вода залогирована."""
+    from handlers.water import msg_water_amount
+    today = date.today().isoformat()
+    msg = _make_message("350")
+    state = AsyncMock()
+    await db.upsert_user(1, "u", "U")
+    with patch("handlers.water.db", db):
+        await msg_water_amount(msg, state)
+    state.clear.assert_awaited_once()
+    total = await db.get_water_today(1, today)
+    assert total == 350
+
+
+async def test_msg_water_goal_invalid_text(db):
+    """Нечисловой ввод цели — ошибка, FSM не сброшен."""
+    from handlers.water import msg_water_goal
+    msg = _make_message("много")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_goal(msg, state)
+    msg.answer.assert_awaited_once()
+    assert "целое число" in msg.answer.call_args[0][0]
+    state.clear.assert_not_called()
+
+
+async def test_msg_water_goal_out_of_range(db):
+    """Цель вне [1000, 5000] — ошибка диапазона."""
+    from handlers.water import msg_water_goal
+    msg = _make_message("500")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_goal(msg, state)
+    assert "1000" in msg.answer.call_args[0][0]
+
+
+async def test_msg_water_goal_valid(db):
+    """Корректная цель: сохранена в БД, FSM очищен."""
+    from handlers.water import msg_water_goal
+    await db.upsert_user(1, "u", "U")
+    msg = _make_message("2500")
+    state = AsyncMock()
+    with patch("handlers.water.db", db):
+        await msg_water_goal(msg, state)
+    state.clear.assert_awaited_once()
+    saved = await db.get_water_goal(1)
+    assert saved == 2500
+
+
+async def test_get_goal_uses_saved(db):
+    """_get_goal возвращает сохранённую цель без расчёта по профилю."""
+    from handlers.water import _get_goal
+    await db.upsert_user(1, "u", "U")
+    await db.set_water_goal(1, 3000)
+    with patch("handlers.water.db", db):
+        goal = await _get_goal(1)
+    assert goal == 3000
+
+
+async def test_get_goal_fallback_from_profile(db):
+    """_get_goal считает дефолт по весу, если цель не сохранена."""
+    from handlers.water import _get_goal
+    from services.kbju import calculate_kbju
+    kbju = calculate_kbju("female", 30, 165, 60.0, "moderate", "maintain")
+    await db.upsert_user(1, "u", "U")
+    await db.update_profile(
+        1, "female", 30, 165, 60.0, "moderate", "maintain",
+        kbju.bmr, kbju.tdee, kbju.calories,
+        kbju.protein, kbju.fat, kbju.carbs,
+    )
+    with patch("handlers.water.db", db):
+        goal = await _get_goal(1)
+    assert goal == 1800  # 60 * 30 = 1800

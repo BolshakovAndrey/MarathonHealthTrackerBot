@@ -38,6 +38,15 @@ async def _get_goal(user_id: int) -> int:
     return calc_default_goal(gender, weight)
 
 
+async def _ensure_user(message_or_callback: Message | CallbackQuery):
+    user = message_or_callback.from_user
+    await db.upsert_user(
+        user.id,
+        user.username or "",
+        user.full_name or "",
+    )
+
+
 async def _show_water(target: Message | CallbackQuery, user_id: int, edit: bool = False):
     today = date.today().isoformat()
     current = await db.get_water_today(user_id, today)
@@ -61,13 +70,14 @@ async def _show_water(target: Message | CallbackQuery, user_id: int, edit: bool 
 @router.message(Command("water"))
 @router.message(F.text == "💧 Вода")
 async def cmd_water(message: Message):
+    await _ensure_user(message)
     await _show_water(message, message.from_user.id)
 
 
 @router.callback_query(F.data.startswith("water_add:"))
 async def cb_water_add(callback: CallbackQuery):
+    await _ensure_user(callback)
     ml = int(callback.data.split(":")[1])
-    today = date.today().isoformat()
     await db.log_water(callback.from_user.id, ml)
     await _show_water(callback, callback.from_user.id, edit=True)
 
@@ -84,6 +94,7 @@ async def cb_water_custom(callback: CallbackQuery, state: FSMContext):
 
 @router.message(WaterInput.waiting_amount)
 async def msg_water_amount(message: Message, state: FSMContext):
+    await _ensure_user(message)
     value = (message.text or "").strip()
     if not value.isdigit():
         await message.answer("Введите целое число миллилитров.")
@@ -111,6 +122,7 @@ async def cb_water_set_goal(callback: CallbackQuery, state: FSMContext):
 
 @router.message(WaterInput.waiting_goal)
 async def msg_water_goal(message: Message, state: FSMContext):
+    await _ensure_user(message)
     value = (message.text or "").strip()
     if not value.isdigit():
         await message.answer("Введите целое число миллилитров.")

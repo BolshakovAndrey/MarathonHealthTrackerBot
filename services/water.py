@@ -7,8 +7,8 @@ FILLED = "🟦"
 EMPTY = "⬜"
 
 # Дефолты если профиль не заполнен
-DEFAULT_GOAL_FEMALE_ML = 2000
-DEFAULT_GOAL_MALE_ML = 2500
+DEFAULT_GOAL_FEMALE_ML = 2500
+DEFAULT_GOAL_MALE_ML = 3500
 WEIGHT_FACTOR_ML = 30  # мл на кг веса
 
 
