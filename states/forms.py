@@ -17,3 +17,8 @@ class WaterInput(StatesGroup):
 
 class MoodInput(StatesGroup):
     waiting_note = State()
+
+
+class SleepInput(StatesGroup):
+    waiting_hours = State()    # для произвольного ввода
+    waiting_quality = State()  # выбор качества после ввода часов

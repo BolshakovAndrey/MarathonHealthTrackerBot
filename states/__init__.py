@@ -1,3 +1,3 @@
-from .forms import ProfileSetup, WaterInput, MoodInput
+from .forms import ProfileSetup, WaterInput, MoodInput, SleepInput
 
-__all__ = ["ProfileSetup", "WaterInput", "MoodInput"]
+__all__ = ["ProfileSetup", "WaterInput", "MoodInput", "SleepInput"]
