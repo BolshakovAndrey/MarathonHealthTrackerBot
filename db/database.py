@@ -339,7 +339,7 @@ class Database:
 
     async def get_mood_history(self, user_id: int, limit: int = 7):
         return await self.fetchall(
-            "SELECT emoji, note, logged_at FROM mood_log WHERE user_id = ? ORDER BY logged_at DESC LIMIT ?",
+            "SELECT emoji, note, logged_at FROM mood_log WHERE user_id = ? ORDER BY logged_at DESC, id DESC LIMIT ?",
             (user_id, limit),
         )
 

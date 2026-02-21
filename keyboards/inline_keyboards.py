@@ -27,3 +27,13 @@ def cancel_keyboard():
     builder.row(InlineKeyboardButton(text="Отмена", callback_data="cancel"))
     return builder.as_markup()
 
+
+def skip_cancel_keyboard():
+    """Кнопки Пропустить + Отмена — для опциональных полей в FSM."""
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="Пропустить", callback_data="skip"),
+        InlineKeyboardButton(text="Отмена", callback_data="cancel"),
+    )
+    return builder.as_markup()
+

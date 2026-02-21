@@ -13,3 +13,7 @@ class ProfileSetup(StatesGroup):
 class WaterInput(StatesGroup):
     waiting_amount = State()
     waiting_goal = State()
+
+
+class MoodInput(StatesGroup):
+    waiting_note = State()
