@@ -256,6 +256,10 @@ class Database:
             (user_id, username, full_name),
         )
 
+    async def get_all_users(self):
+        """Все пользователи для рассылки планировщика."""
+        return await self.fetchall("SELECT * FROM users")
+
     async def get_user(self, user_id: int):
         return await self.fetchone(
             "SELECT * FROM users WHERE user_id = ?", (user_id,)

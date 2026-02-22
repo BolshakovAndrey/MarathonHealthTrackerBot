@@ -9,6 +9,7 @@ from aiogram.filters import ExceptionTypeFilter
 from config import settings
 from loader import bot, dp, db, logger
 from handlers import all_routers
+from services.scheduler import setup_scheduler
 
 
 def _sentry_before_send(event, hint):
@@ -53,12 +54,22 @@ async def handle_bad_request(event: types.ErrorEvent):
     raise event.exception
 
 
+_scheduler = None
+
+
 async def on_startup():
+    global _scheduler
     await db.connect()
     logger.info(f"БД подключена (postgres={db._use_pg})")
+    _scheduler = setup_scheduler(bot)
+    _scheduler.start()
+    logger.info("Планировщик запущен")
 
 
 async def on_shutdown():
+    if _scheduler and _scheduler.running:
+        _scheduler.shutdown(wait=False)
+        logger.info("Планировщик остановлен")
     await db.close()
     logger.info("БД отключена")
 
