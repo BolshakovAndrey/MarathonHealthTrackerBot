@@ -376,5 +376,38 @@ class Database:
             (user_id, limit),
         )
 
+    async def get_headache_count_today(self, user_id: int, today: str) -> int:
+        row = await self.fetchone(
+            "SELECT COUNT(*) FROM headache_log WHERE user_id = ? AND DATE(logged_at) = ?",
+            (user_id, today),
+        )
+        return row[0] if row else 0
+
+    # --- Export (полная история без LIMIT) ---
+
+    async def get_all_water_logs(self, user_id: int):
+        return await self.fetchall(
+            "SELECT amount_ml, logged_at FROM water_log WHERE user_id = ? ORDER BY logged_at",
+            (user_id,),
+        )
+
+    async def get_all_mood_logs(self, user_id: int):
+        return await self.fetchall(
+            "SELECT emoji, note, logged_at FROM mood_log WHERE user_id = ? ORDER BY logged_at",
+            (user_id,),
+        )
+
+    async def get_all_sleep_logs(self, user_id: int):
+        return await self.fetchall(
+            "SELECT sleep_date, hours, quality FROM sleep_log WHERE user_id = ? ORDER BY sleep_date",
+            (user_id,),
+        )
+
+    async def get_all_headache_logs(self, user_id: int):
+        return await self.fetchall(
+            "SELECT intensity, location, triggers, duration, logged_at FROM headache_log WHERE user_id = ? ORDER BY logged_at",
+            (user_id,),
+        )
+
 
 db = Database()
