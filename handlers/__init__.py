@@ -7,6 +7,7 @@ from .mood import router as mood_router
 from .sleep import router as sleep_router
 from .headache import router as headache_router
 from .stats import router as stats_router
+from .help import router as help_router
 
 all_routers: list[Router] = [
     start_router,
@@ -16,4 +17,5 @@ all_routers: list[Router] = [
     sleep_router,
     headache_router,
     stats_router,
+    help_router,
 ]

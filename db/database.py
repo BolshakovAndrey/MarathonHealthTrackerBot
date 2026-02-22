@@ -51,38 +51,50 @@ class Database:
 
     async def execute(self, sql: str, params=None):
         params = params or ()
-        if self._use_pg:
-            async with self._pool.acquire() as conn:
-                await conn.execute(_to_pg(sql), *params)
-        else:
-            async with aiosqlite.connect(self._sqlite_path) as conn:
-                await conn.execute("PRAGMA foreign_keys = ON")
-                await conn.execute(sql, params)
-                await conn.commit()
+        try:
+            if self._use_pg:
+                async with self._pool.acquire() as conn:
+                    await conn.execute(_to_pg(sql), *params)
+            else:
+                async with aiosqlite.connect(self._sqlite_path) as conn:
+                    await conn.execute("PRAGMA foreign_keys = ON")
+                    await conn.execute(sql, params)
+                    await conn.commit()
+        except Exception as e:
+            logger.error("DB execute error | sql=%s | %s", sql[:80], e)
+            raise
 
     async def fetchall(self, sql: str, params=None):
         params = params or ()
-        if self._use_pg:
-            async with self._pool.acquire() as conn:
-                rows = await conn.fetch(_to_pg(sql), *params)
-                return [tuple(r) for r in rows]
-        else:
-            async with aiosqlite.connect(self._sqlite_path) as conn:
-                await conn.execute("PRAGMA foreign_keys = ON")
-                cursor = await conn.execute(sql, params)
-                return await cursor.fetchall()
+        try:
+            if self._use_pg:
+                async with self._pool.acquire() as conn:
+                    rows = await conn.fetch(_to_pg(sql), *params)
+                    return [tuple(r) for r in rows]
+            else:
+                async with aiosqlite.connect(self._sqlite_path) as conn:
+                    await conn.execute("PRAGMA foreign_keys = ON")
+                    cursor = await conn.execute(sql, params)
+                    return await cursor.fetchall()
+        except Exception as e:
+            logger.error("DB fetchall error | sql=%s | %s", sql[:80], e)
+            raise
 
     async def fetchone(self, sql: str, params=None):
         params = params or ()
-        if self._use_pg:
-            async with self._pool.acquire() as conn:
-                row = await conn.fetchrow(_to_pg(sql), *params)
-                return tuple(row) if row else None
-        else:
-            async with aiosqlite.connect(self._sqlite_path) as conn:
-                await conn.execute("PRAGMA foreign_keys = ON")
-                cursor = await conn.execute(sql, params)
-                return await cursor.fetchone()
+        try:
+            if self._use_pg:
+                async with self._pool.acquire() as conn:
+                    row = await conn.fetchrow(_to_pg(sql), *params)
+                    return tuple(row) if row else None
+            else:
+                async with aiosqlite.connect(self._sqlite_path) as conn:
+                    await conn.execute("PRAGMA foreign_keys = ON")
+                    cursor = await conn.execute(sql, params)
+                    return await cursor.fetchone()
+        except Exception as e:
+            logger.error("DB fetchone error | sql=%s | %s", sql[:80], e)
+            raise
 
     @property
     def _serial(self) -> str:

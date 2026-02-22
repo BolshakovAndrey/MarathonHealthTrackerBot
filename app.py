@@ -54,6 +54,30 @@ async def handle_bad_request(event: types.ErrorEvent):
     raise event.exception
 
 
+@dp.error()
+async def handle_unknown_error(event: types.ErrorEvent):
+    """Fallback: логирует необработанные исключения и сообщает пользователю."""
+    logger.exception("Необработанная ошибка: %s", event.exception)
+    update = event.update
+    message = None
+    if update.message:
+        message = update.message
+    elif update.callback_query:
+        message = update.callback_query.message
+        try:
+            await update.callback_query.answer()
+        except Exception:
+            pass
+    if message:
+        try:
+            await message.answer(
+                "⚠️ Произошла ошибка. Попробуйте ещё раз или нажмите /start."
+            )
+        except Exception:
+            pass
+    return True
+
+
 _scheduler = None
 
 
